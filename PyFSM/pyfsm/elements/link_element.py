@@ -5,6 +5,7 @@ from .transport_event import TransportEvent
 
 class LinkElement(BaseUnit):
     def __init__(self):
+        BaseUnit.__init__(self)
         self.sources = None
         self.destinations = None
         self.guards = None
@@ -23,7 +24,7 @@ class LinkElement(BaseUnit):
         self.accepts = ListUtils.add_or_create(self.accepts, accept)
 
     def accept(self, event):
-        self_event = TransportEvent.of(event)
+        self_event = TransportEvent.of(event, self)
         if ListUtils.is_empty_or_any(self.accepts, self_event.id) and\
                 ListUtils.is_empty_or_any_expr(self.guards, lambda guard: guard(self_event)):
             for destination in self.destinations:

@@ -4,17 +4,19 @@ from ..utils import ListUtils
 
 class TransportEvent(BaseUnit):
     def __init__(self):
+        BaseUnit.__init__(self)
         self.sources = None
         self.destinations = None
         self.id = None
         self.data = None
         self.unit = None
+        self.view = {}
 
     def add_destination(self, destination):
         self.destinations = ListUtils.add_or_create(self.destinations, destination)
 
     def add_source(self, source):
-        self.sources = ListUtils.add_or_create(self.sources)
+        self.sources = ListUtils.add_or_create(self.sources, source)
 
     @staticmethod
     def of(other, unit):
@@ -26,4 +28,5 @@ class TransportEvent(BaseUnit):
         event.id = other.id
         event.data = other.data
         event.unit = unit
+        event.view = other.view
         return event
