@@ -1,6 +1,7 @@
 from .base_unit import VertexUnit
 from .transport_event import TransportEvent
 from ..utils import ListUtils
+from .event_type import EventType
 
 
 class StateUnit(VertexUnit):
@@ -16,14 +17,15 @@ class StateUnit(VertexUnit):
         self.locked = False
         self.exit_actions = None
         self.entry_actions = None
+        self.incoming = None
 
     @property
     def active(self):
-        return self._active_flag
+        return self.pseudo_unit or self._active_flag
 
     @property
     def _is_active(self):
-        return self._active_count > 0
+        return self.pseudo_unit or self._active_count > 0
 
     def do_entry(self, event):
         for action in ListUtils.get_or_else(self.entry_actions):
@@ -39,6 +41,7 @@ class StateUnit(VertexUnit):
 
     def enter(self, event):
         self_event = TransportEvent.of(event, self)
+        self_event.event_type = EventType.INTERNAL
         if self._is_active and not self._active_flag:
             self._active_flag = True
             if self.parent:
@@ -47,7 +50,7 @@ class StateUnit(VertexUnit):
             if self.starters:
                 for starter in self.starters:
                     if not starter.locked:
-                        starter.increment_active_count(1)
+                        starter.increment_active_count_backward(1)
                         starter.enter(self_event)
 
     def accept(self, event):
@@ -80,6 +83,8 @@ class StateUnit(VertexUnit):
     def receive(self, event):
         if self._is_active:
             self_event = TransportEvent.of(event, self)
+            if not self.pseudo_unit:
+                self_event.event_type = EventType.EXTERNAL
             for child in [child for child in ListUtils.get_or_else(self.children) if child.active]:
                 child.receive(self_event)
             for link in ListUtils.get_or_else(self.links):

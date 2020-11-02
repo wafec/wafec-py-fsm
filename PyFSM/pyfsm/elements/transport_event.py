@@ -1,5 +1,6 @@
 from .base_unit import BaseUnit
 from ..utils import ListUtils
+from .event_type import EventType
 
 
 class TransportEvent(BaseUnit):
@@ -11,6 +12,7 @@ class TransportEvent(BaseUnit):
         self.data = None
         self.unit = None
         self.view = {}
+        self.event_type = EventType.EXTERNAL
 
     def add_destination(self, destination):
         self.destinations = ListUtils.add_or_create(self.destinations, destination)
@@ -29,4 +31,5 @@ class TransportEvent(BaseUnit):
         event.data = other.data
         event.unit = unit
         event.view = other.view
+        event.event_type = other.event_type
         return event

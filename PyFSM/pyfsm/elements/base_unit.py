@@ -1,5 +1,6 @@
 import abc
 
+from .event_type import EventType
 from pyfsm.utils.list_utils import ListUtils
 
 
@@ -17,6 +18,7 @@ class BaseUnit(object):
 class VertexUnit(BaseUnit, metaclass=abc.ABCMeta):
     def __init__(self):
         BaseUnit.__init__(self)
+        self.pseudo_unit = False
 
     @abc.abstractmethod
     def enter(self, event):
@@ -27,19 +29,20 @@ class VertexUnit(BaseUnit, metaclass=abc.ABCMeta):
         pass
 
     @staticmethod
-    def find_vertex_unit_from_sources(event):
+    def find_vertex_unit_from_sources(event, force=False):
         vertex_units = []
-        sources = ListUtils.get_or_else(event.sources)
-        while True:
-            sources_alt = []
-            for source in sources:
-                if issubclass(type(source.unit), VertexUnit):
-                    vertex_units.append(source.unit)
-                else:
-                    sources_alt += ListUtils.get_or_else(source.sources)
-            if not sources_alt:
-                break
-            sources = sources_alt
+        if event.event_type == EventType.EXTERNAL or force:
+            sources = ListUtils.get_or_else(event.sources)
+            while True:
+                sources_alt = []
+                for source in sources:
+                    if issubclass(type(source.unit), VertexUnit) and not source.unit.pseudo_unit:
+                        vertex_units.append(source.unit)
+                    else:
+                        sources_alt += ListUtils.get_or_else(source.sources)
+                if not sources_alt:
+                    break
+                sources = sources_alt
         return vertex_units
 
 
